@@ -388,6 +388,8 @@
     font-family: var(--mono);
     font-size: 13px;
     line-height: 1.7;
+    white-space: pre;
+    tab-size: 2;
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 12px;
