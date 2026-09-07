@@ -7,12 +7,13 @@
 
 > 🧭 **La app de ejemplo.** El manual usa nombres genéricos `miorg/miapp` para que los adaptes. El flujo es idéntico para cualquier stack: cambia solo el contenido del `Dockerfile` y del esqueleto que pedís en el paso 2.
 
-> 🚀 **Instancia real de este repo.** Este tutorial ya está implementado y desplegado:
+> 🚀 **Este tutorial se documenta a sí mismo.** La app desplegada **sirve esta misma wiki** como sitio web: la home `/` renderiza el sitio-wiki que estás leyendo.
 > - **Repo:** [`neomemorial-org/tutorial-apps`](https://github.com/neomemorial-org/tutorial-apps)
 > - **App (EasyPanel):** `apps-wiki` · build por Docker · deploy key + webhook activos
-> - **URL en vivo:** <https://apps-wiki.u1xuyr.easypanel.host/>
+> - **URL en vivo (la wiki):** <https://apps-wiki.u1xuyr.easypanel.host/>
+> - **Demo hola-mundo (estado DB):** <https://apps-wiki.u1xuyr.easypanel.host/demo>
 >
-> El código de la app vive en la **raíz del repo** (`Dockerfile`, `public/`, `app/`, `config/`) y la documentación en `docs/`.
+> El código vive en la **raíz del repo** (`Dockerfile`, `public/`, `app/`, `config/`), la documentación en `docs/` (versión markdown), y el sitio-wiki en `app/Views/home.php`.
 
 ## Índice
 
@@ -21,7 +22,7 @@
 3. [Crear la aplicación en EasyPanel](#3-crear-la-aplicación-en-easypanel)
 4. [Conectar deploy automático: deploy key + webhook](#4-conectar-deploy-automático-deploy-key--webhook)
 5. [Todo se construye con Docker](#5-todo-se-construye-con-docker)
-6. [Primer deploy: ver el "hola mundo"](#6-primer-deploy-ver-el-hola-mundo)
+6. [Primer deploy: ver la wiki en vivo](#6-primer-deploy-ver-la-wiki-en-vivo)
 
 ---
 
@@ -112,9 +113,11 @@ miapp/
 │   │   ├── Router.php      # enruta method + path → controlador
 │   │   └── Database.php    # conexión PDO a Postgres
 │   ├── Controllers/
-│   │   └── HomeController.php
+│   │   ├── HomeController.php   # sirve la wiki en /
+│   │   └── DemoController.php   # hola mundo + estado DB en /demo
 │   └── Views/
-│       └── home.php
+│       ├── home.php    # el sitio-wiki (HTML estático)
+│       └── demo.php    # vista del hola mundo
 ├── config/
 │   └── config.php
 ├── Dockerfile
@@ -268,9 +271,11 @@ require __DIR__ . '/../app/autoload.php';
 
 use App\Core\Router;
 use App\Controllers\HomeController;
+use App\Controllers\DemoController;
 
 $router = new Router();
-$router->get('/', [HomeController::class, 'index']);
+$router->get('/', [HomeController::class, 'index']);       // la wiki
+$router->get('/demo', [DemoController::class, 'index']);   // hola mundo + estado DB
 $router->dispatch($_SERVER['REQUEST_URI'] ?? '/', $_SERVER['REQUEST_METHOD'] ?? 'GET');
 ```
 
@@ -332,7 +337,7 @@ final class Database
 }
 ```
 
-El controlador y la vista del "hola mundo":
+La home renderiza **esta misma wiki**: `HomeController` incluye la vista `app/Views/home.php`, que es el HTML del sitio (el mismo que ves publicado como Artifact). Es HTML estático, sin lógica PHP:
 
 ```php
 <?php
@@ -341,39 +346,61 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
-use App\Core\Database;
-
 final class HomeController
 {
     public function index(): void
     {
-        $db = Database::connect();
-        $dbEstado = $db instanceof \PDO ? 'conectada' : 'sin conexion';
+        // home.php es el sitio-wiki completo (HTML estatico)
         require __DIR__ . '/../Views/home.php';
     }
 }
 ```
 
+El "hola mundo" de ejemplo queda en `/demo` — sirve para comprobar que las variables de entorno y la conexión a Postgres funcionan:
+
 ```php
-<!-- app/Views/home.php -->
+<?php
+// app/Controllers/DemoController.php
+declare(strict_types=1);
+
+namespace App\Controllers;
+
+use App\Core\Database;
+
+final class DemoController
+{
+    public function index(): void
+    {
+        $db = Database::connect();
+        $dbEstado = $db instanceof \PDO ? 'conectada' : 'sin conexion';
+        require __DIR__ . '/../Views/demo.php';
+    }
+}
+```
+
+```php
+<!-- app/Views/demo.php -->
 <!doctype html>
 <html lang="es">
 <meta charset="utf-8">
-<title>miapp</title>
+<title>apps-wiki · demo</title>
 <body style="font-family:system-ui;padding:3rem">
   <h1>Hola mundo 👋</h1>
   <p>Base de datos: <?= htmlspecialchars($dbEstado) ?></p>
+  <p><a href="/">← volver a la wiki</a></p>
 </body>
 </html>
 ```
 
+> 📝 **Sobre `home.php`.** Es un archivo HTML grande (el sitio-wiki completo). En este repo se genera a partir del mismo HTML que publicás como Artifact; podés editarlo directo o regenerarlo cuando actualices la wiki.
+
 ---
 
-## 6. Primer deploy: ver el "hola mundo"
+## 6. Primer deploy: ver la wiki en vivo
 
 ### 6.1 · Agregar Postgres (opcional para el primer deploy)
 
-> El "hola mundo" abre **sin** base de datos. Podés saltar 6.1 y 6.2, ver la app funcionando, y sumar Postgres después.
+> La wiki (home `/`) abre **sin** base de datos. Postgres solo lo necesita la ruta `/demo` para mostrar el estado de conexión. Podés saltar 6.1 y 6.2 y sumarlo después.
 
 1. En el proyecto `miapp` → **+ Service → Postgres**. Nombre: `db`.
 2. EasyPanel te muestra las **Credentials**: host interno, puerto, usuario, contraseña y database. El host interno suele ser el nombre del servicio, ej. `miapp_db`.
@@ -398,7 +425,7 @@ En el servicio `web` → pestaña **Environment**, cargá las variables que lee 
 2. Mirá los **Logs / Deployments**: verás el build de Docker (FROM, extensiones, copy del código) y luego el contenedor arriba.
 3. Abrí el **dominio** asignado en la pestaña Domains → en la instancia real: <https://apps-wiki.u1xuyr.easypanel.host/>
 
-> ✅ Deberías ver **"Hola mundo 👋"** y la línea **"Base de datos: conectada"**. Si todavía no creaste el servicio Postgres, verás **"sin conexion"** y eso está bien — la app abre igual. Cuando cargues las variables del paso 6.2, pasa a "conectada".
+> ✅ En `/` deberías ver **esta misma wiki**. Y en [`/demo`](https://apps-wiki.u1xuyr.easypanel.host/demo), el "Hola mundo 👋" con **"Base de datos: conectada"** (o **"sin conexion"** si todavía no creaste Postgres — la app abre igual; pasa a "conectada" cuando cargues las variables del paso 6.2).
 
 ---
 
