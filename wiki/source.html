@@ -2,6 +2,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<script>(function(){try{var t=localStorage.getItem('ep-theme');document.documentElement.setAttribute('data-theme',t==='dark'?'dark':'light');}catch(e){document.documentElement.setAttribute('data-theme','light');}})();</script>
 <style>
   :root {
     --ground: #FAFBF9;
@@ -481,7 +482,7 @@
       <div class="note">
         <span class="ic">🧭</span>
         <div>
-          <p><strong>La app de ejemplo.</strong> El manual usa nombres genéricos <code>miorg/miapp</code> para que los adaptes. El flujo es idéntico para cualquier stack: cambia solo el contenido del <code>Dockerfile</code> y del esqueleto que pedís en el paso 2.</p>
+          <p><strong>La app de ejemplo.</strong> El manual usa nombres genéricos <code>miorg/miapp</code> para que los adaptes. El flujo es idéntico para cualquier stack: cambia solo el contenido del <code>Dockerfile</code> y del esqueleto que pides en el paso 2.</p>
         </div>
       </div>
 
@@ -502,9 +503,9 @@
 
       <h3>Opción A — desde la web</h3>
       <ol class="steps">
-        <li>Entrá a <a href="https://github.com/new" target="_blank" rel="noopener">github.com/new</a>.</li>
+        <li>Entra a <a href="https://github.com/new" target="_blank" rel="noopener">github.com/new</a>.</li>
         <li>Nombre: <code>miapp</code>. Visibilidad: <strong>Private</strong> (el deploy key funciona igual con repos privados).</li>
-        <li>Tildá <strong>Add a README</strong> y elegí <strong>.gitignore → nada aún</strong> (lo agregamos nosotros). Create repository.</li>
+        <li>Marca <strong>Add a README</strong> y elige <strong>.gitignore → nada aún</strong> (lo agregamos nosotros). Create repository.</li>
       </ol>
 
       <h3>Opción B — desde la terminal con <code>gh</code></h3>
@@ -528,20 +529,20 @@ gh repo create miorg/miapp <span class="tok-k">--private</span> <span class="tok
 
       <div class="note">
         <span class="ic">🔑</span>
-        <div><p>Anotá la <strong>URL SSH</strong> del repo: <code>git@github.com:miorg/miapp.git</code>. La vas a necesitar en el paso 4 para conectar EasyPanel.</p></div>
+        <div><p>Anota la <strong>URL SSH</strong> del repo: <code>git@github.com:miorg/miapp.git</code>. La vas a necesitar en el paso 4 para conectar EasyPanel.</p></div>
       </div>
     </section>
 
     <!-- ============ PASO 2 ============ -->
     <section class="step" id="s2">
       <div class="step-head"><span class="step-num">2</span><h2>Armar el esqueleto con Claude</h2></div>
-      <p>En vez de crear archivos a mano, le pedís a Claude que genere el esqueleto completo describiendo el <strong>stack</strong> y las <strong>convenciones</strong>. Cuanto más precisa la especificación, menos correcciones después.</p>
+      <p>En vez de crear archivos a mano, le pides a Claude que genere el esqueleto completo describiendo el <strong>stack</strong> y las <strong>convenciones</strong>. Cuanto más precisa la especificación, menos correcciones después.</p>
 
       <h3>Prompt plantilla (copiar y completar)</h3>
-      <p>Reemplazá lo que está entre <code>«…»</code>. Este ejemplo ya viene cargado con el stack del manual:</p>
+      <p>Reemplaza lo que está entre <code>«…»</code>. Este ejemplo ya viene cargado con el stack del manual:</p>
       <figure class="code" data-lang="prompt">
         <figcaption><span class="fname"><span class="dot"></span>prompt para Claude</span><button class="copybtn" type="button">Copiar</button></figcaption>
-        <pre><code>Armá el esqueleto base de una aplicación web lista para deploy con Docker.
+        <pre><code>Arma el esqueleto base de una aplicación web lista para deploy con Docker.
 
 STACK
 - Lenguaje: PHP «8.3», sin framework (vanilla).
@@ -549,7 +550,7 @@ STACK
   único en public/index.php y un router propio simple.
 - Autoload: PSR-4 con un autoloader propio liviano (app/autoload.php),
   namespace raíz "App\\" apuntando a app/. Sin dependencias externas
-  (Composer opcional, solo si más adelante sumás librerías).
+  (Composer opcional, solo si más adelante agregas librerías).
 - Base de datos: PostgreSQL, acceso vía PDO (pdo_pgsql).
 - Config por variables de entorno (getenv), nunca hardcodeada.
 
@@ -567,7 +568,7 @@ REQUISITOS
 - Código PHP 8+ con declare(strict_types=1) y tipado.
 - Comentarios breves en español.
 
-Devolveme cada archivo con su ruta y su contenido completo.</code></pre>
+Devuélveme cada archivo con su ruta y su contenido completo.</code></pre>
       </figure>
 
       <div class="note">
@@ -597,7 +598,7 @@ Devolveme cada archivo con su ruta y su contenido completo.</code></pre>
 ├── Dockerfile
 └── .gitignore</div>
 
-      <p>Revisá lo generado, hacé commit y push a <code>main</code>:</p>
+      <p>Revisa lo generado, haz commit y push a <code>main</code>:</p>
       <figure class="code" data-lang="bash">
         <figcaption><span class="fname"><span class="dot"></span>terminal</span><button class="copybtn" type="button">Copiar</button></figcaption>
         <pre><code>git add .
@@ -609,12 +610,12 @@ git push <span class="tok-k">-u</span> origin main</code></pre>
     <!-- ============ PASO 3 ============ -->
     <section class="step" id="s3">
       <div class="step-head"><span class="step-num">3</span><h2>Crear la aplicación en EasyPanel</h2></div>
-      <p>En EasyPanel un <strong>Proyecto</strong> agrupa servicios (tu app + su base de datos). Dentro creás un servicio de tipo <strong>App</strong>.</p>
+      <p>En EasyPanel un <strong>Proyecto</strong> agrupa servicios (tu app + su base de datos). Dentro creas un servicio de tipo <strong>App</strong>.</p>
       <ol class="steps">
         <li>En el dashboard, <strong>Create Project</strong> → nombre <code>miapp</code>.</li>
-        <li>Dentro del proyecto, <strong>+ Service</strong> → elegí <strong>App</strong>.</li>
-        <li>Ponele nombre al servicio, ej. <code>web</code>. Queda como <code>miapp_web</code> a nivel interno.</li>
-        <li>Guardá. Todavía no despliega nada — falta conectar la fuente (paso 4) y definir el build (paso 5).</li>
+        <li>Dentro del proyecto, <strong>+ Service</strong> → elige <strong>App</strong>.</li>
+        <li>Ponle nombre al servicio, ej. <code>web</code>. Queda como <code>miapp_web</code> a nivel interno.</li>
+        <li>Guarda. Todavía no despliega nada — falta conectar la fuente (paso 4) y definir el build (paso 5).</li>
       </ol>
       <div class="note">
         <span class="ic">🗄️</span>
@@ -633,16 +634,16 @@ git push <span class="tok-k">-u</span> origin main</code></pre>
 
       <h3>4.1 · Apuntar EasyPanel al repo</h3>
       <ol class="steps">
-        <li>En el servicio <code>web</code>, pestaña <strong>Source</strong> → elegí <strong>GitHub</strong> (modo Deploy Key, no la GitHub App).</li>
+        <li>En el servicio <code>web</code>, pestaña <strong>Source</strong> → elige <strong>GitHub</strong> (modo Deploy Key, no la GitHub App).</li>
         <li>Repository: <code>git@github.com:miorg/miapp.git</code> · Branch: <code>main</code>.</li>
-        <li>EasyPanel genera y muestra una <strong>Deploy Key</strong> (clave pública SSH). Copiala entera.</li>
+        <li>EasyPanel genera y muestra una <strong>Deploy Key</strong> (clave pública SSH). Cópiala entera.</li>
       </ol>
 
       <h3>4.2 · Cargar la deploy key en GitHub</h3>
       <ol class="steps">
         <li>En el repo → <strong>Settings → Deploy keys → Add deploy key</strong>.</li>
-        <li>Title: <code>easypanel</code>. Key: pegá la clave que copiaste.</li>
-        <li><strong>Dejá SIN tildar “Allow write access”</strong> — EasyPanel solo necesita leer. Add key.</li>
+        <li>Title: <code>easypanel</code>. Key: pega la clave que copiaste.</li>
+        <li><strong>Deja SIN marcar “Allow write access”</strong> — EasyPanel solo necesita leer. Add key.</li>
       </ol>
       <div class="note warn">
         <span class="ic">🔒</span>
@@ -651,27 +652,27 @@ git push <span class="tok-k">-u</span> origin main</code></pre>
 
       <h3>4.3 · Registrar el webhook en GitHub</h3>
       <ol class="steps">
-        <li>En EasyPanel, dentro de <strong>Source</strong> / <strong>Deployments</strong>, copiá la <strong>Webhook URL</strong> que ofrece el servicio.</li>
+        <li>En EasyPanel, dentro de <strong>Source</strong> / <strong>Deployments</strong>, copia la <strong>Webhook URL</strong> que ofrece el servicio.</li>
         <li>En el repo → <strong>Settings → Webhooks → Add webhook</strong>.</li>
         <li>Payload URL: la de EasyPanel · Content type: <code>application/json</code>.</li>
         <li>Events: <strong>Just the push event</strong> · Active: ✓. Add webhook.</li>
       </ol>
-      <p>GitHub manda un ping de prueba: en la lista de webhooks debería aparecer un <strong>✓ verde</strong> (Recent Deliveries → response 200). Si aparece rojo, revisá que la URL esté completa.</p>
+      <p>GitHub manda un ping de prueba: en la lista de webhooks debería aparecer un <strong>✓ verde</strong> (Recent Deliveries → response 200). Si aparece rojo, revisa que la URL esté completa.</p>
       <div class="note">
         <span class="ic">🔁</span>
-        <div><p>A partir de acá: cada <code>git push origin main</code> dispara el webhook → EasyPanel clona con la deploy key → construye la imagen Docker → redespliega. Cero pasos manuales.</p></div>
+        <div><p>A partir de aquí: cada <code>git push origin main</code> dispara el webhook → EasyPanel clona con la deploy key → construye la imagen Docker → redespliega. Cero pasos manuales.</p></div>
       </div>
     </section>
 
     <!-- ============ PASO 5 ============ -->
     <section class="step" id="s5">
       <div class="step-head"><span class="step-num">5</span><h2>Todo se construye con Docker</h2></div>
-      <p>EasyPanel puede usar Nixpacks o buildpacks, pero acá mandamos nosotros: build method <strong>Dockerfile</strong>. Así el entorno de producción es idéntico al que definimos, sin sorpresas.</p>
+      <p>EasyPanel puede usar Nixpacks o buildpacks, pero aquí mandamos nosotros: build method <strong>Dockerfile</strong>. Así el entorno de producción es idéntico al que definimos, sin sorpresas.</p>
 
       <h3>Elegir el build en EasyPanel</h3>
       <ol class="steps">
         <li>Servicio <code>web</code> → pestaña <strong>Build</strong> → método <strong>Dockerfile</strong>.</li>
-        <li>Dockerfile path: <code>Dockerfile</code> (raíz del repo). Guardá.</li>
+        <li>Dockerfile path: <code>Dockerfile</code> (raíz del repo). Guarda.</li>
       </ol>
 
       <h3>El <code>Dockerfile</code> de la app</h3>
@@ -713,7 +714,7 @@ git push <span class="tok-k">-u</span> origin main</code></pre>
 
       <div class="note">
         <span class="ic">📦</span>
-        <div><p><strong>Si más adelante sumás Composer</strong>, agregá antes del <code>EXPOSE</code>: <code>COPY --from=composer:2 /usr/bin/composer /usr/bin/composer</code> y <code>RUN composer install --no-dev --optimize-autoloader</code>, y cambiá el <code>require</code> de <code>index.php</code> a <code>vendor/autoload.php</code>.</p></div>
+        <div><p><strong>Si más adelante agregas Composer</strong>, agrega antes del <code>EXPOSE</code>: <code>COPY --from=composer:2 /usr/bin/composer /usr/bin/composer</code> y <code>RUN composer install --no-dev --optimize-autoloader</code>, y cambia el <code>require</code> de <code>index.php</code> a <code>vendor/autoload.php</code>.</p></div>
       </div>
 
       <h3>El <code>.htaccess</code> del front controller</h3>
@@ -733,7 +734,7 @@ git push <span class="tok-k">-u</span> origin main</code></pre>
         <pre><code><span class="tok-k">&lt;?php</span>
 declare(strict_types=1);
 
-<span class="tok-c">// App\ -&gt; app/ . Si sumás librerías, pasá a Composer.</span>
+<span class="tok-c">// App\ -&gt; app/ . Si agregas librerías, pasa a Composer.</span>
 spl_autoload_register(<span class="tok-k">static function</span> (string $class): void {
     $prefix = <span class="tok-s">'App\\'</span>;
     <span class="tok-k">if</span> (!str_starts_with($class, $prefix)) {
@@ -874,7 +875,7 @@ final class DemoController
         <span class="ic">📝</span>
         <div>
           <p><strong>Sobre <code>home.php</code> (generado).</strong> No se edita a mano. El fuente de la wiki vive en <code>wiki/source.html</code> (el mismo HTML del Artifact) y <code>home.php</code> se genera con <code>php bin/build-wiki.php</code>.</p>
-          <p>El script envuelve el fuente en un documento HTML completo y lo escribe en <code>app/Views/home.php</code>. Flujo: editás <code>wiki/source.html</code> → corrés el script → commit + push → EasyPanel redespliega.</p>
+          <p>El script envuelve el fuente en un documento HTML completo y lo escribe en <code>app/Views/home.php</code>. Flujo: editas <code>wiki/source.html</code> → ejecutas el script → commit + push → EasyPanel redespliega.</p>
         </div>
       </div>
     </section>
@@ -886,7 +887,7 @@ final class DemoController
       <h3>6.1 · Agregar Postgres <span style="color:var(--muted);font-weight:400;">(opcional para el primer deploy)</span></h3>
       <div class="note">
         <span class="ic">💡</span>
-        <div><p>La wiki (home <code>/</code>) abre <strong>sin</strong> base de datos. Postgres solo lo necesita la ruta <code>/demo</code> para mostrar el estado de conexión. Podés saltar 6.1 y 6.2 y sumarlo después.</p></div>
+        <div><p>La wiki (home <code>/</code>) abre <strong>sin</strong> base de datos. Postgres solo lo necesita la ruta <code>/demo</code> para mostrar el estado de conexión. Puedes saltar 6.1 y 6.2 y sumarlo después.</p></div>
       </div>
       <ol class="steps">
         <li>En el proyecto <code>miapp</code> → <strong>+ Service → Postgres</strong>. Nombre: <code>db</code>.</li>
@@ -894,7 +895,7 @@ final class DemoController
       </ol>
 
       <h3>6.2 · Conectar la app a la DB con variables de entorno</h3>
-      <p>En el servicio <code>web</code> → pestaña <strong>Environment</strong>, cargá las variables que lee <code>Database.php</code>. Usá los valores internos del servicio Postgres:</p>
+      <p>En el servicio <code>web</code> → pestaña <strong>Environment</strong>, carga las variables que lee <code>Database.php</code>. Usa los valores internos del servicio Postgres:</p>
       <table class="kv">
         <tr><th>Variable</th><th>Valor (ejemplo)</th></tr>
         <tr><td>DB_HOST</td><td>miapp_db</td></tr>
@@ -910,9 +911,9 @@ final class DemoController
 
       <h3>6.3 · Desplegar</h3>
       <ol class="steps">
-        <li>En el servicio <code>web</code>, tocá <strong>Deploy</strong> (o simplemente hacé un <code>git push</code> — el webhook lo dispara).</li>
-        <li>Mirá los <strong>Logs / Deployments</strong>: verás el build de Docker (FROM, extensiones, copy del código) y luego el contenedor arriba.</li>
-        <li>Abrí el <strong>dominio</strong> asignado en Domains → instancia real: <a href="https://apps-wiki.u1xuyr.easypanel.host/" target="_blank" rel="noopener">apps-wiki.u1xuyr.easypanel.host</a></li>
+        <li>En el servicio <code>web</code>, toca <strong>Deploy</strong> (o simplemente haz un <code>git push</code> — el webhook lo dispara).</li>
+        <li>Mira los <strong>Logs / Deployments</strong>: verás el build de Docker (FROM, extensiones, copy del código) y luego el contenedor arriba.</li>
+        <li>Abre el <strong>dominio</strong> asignado en Domains → instancia real: <a href="https://apps-wiki.u1xuyr.easypanel.host/" target="_blank" rel="noopener">apps-wiki.u1xuyr.easypanel.host</a></li>
       </ol>
 
       <div class="note">
@@ -922,7 +923,7 @@ final class DemoController
 
       <div class="divider-final">
         <h3>Listo — y ahora es automático</h3>
-        <p>La app quedó en producción y el pipeline en marcha. De acá en más el ciclo es: <strong>editás → <code>git push origin main</code> → EasyPanel construye y redespliega solo</strong>. Para una app nueva, repetís del paso 1 al 6 cambiando el nombre del repo y el <code>Dockerfile</code>.</p>
+        <p>La app quedó en producción y el pipeline en marcha. De aquí en más el ciclo es: <strong>editas → <code>git push origin main</code> → EasyPanel construye y redespliega solo</strong>. Para una app nueva, repites del paso 1 al 6 cambiando el nombre del repo y el <code>Dockerfile</code>.</p>
       </div>
 
       <footer>
@@ -975,8 +976,8 @@ final class DemoController
     ic.textContent = dark ? '☀' : '☾';
     lbl.textContent = dark ? 'Claro' : 'Oscuro';
   }
-  var cur = 'system';
-  try { cur = localStorage.getItem('ep-theme') || 'system'; } catch (e) {}
+  var cur = 'light';
+  try { cur = localStorage.getItem('ep-theme') || 'light'; } catch (e) {}
   apply(cur);
   btn.addEventListener('click', function () {
     var darkNow = cur === 'dark' || (cur === 'system' && prefersDark());

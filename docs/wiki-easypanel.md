@@ -5,7 +5,7 @@
 
 **Stack del ejemplo:** `PHP 8.3` · sin framework · MVC · PostgreSQL · Docker · EasyPanel · GitHub
 
-> 🧭 **La app de ejemplo.** El manual usa nombres genéricos `miorg/miapp` para que los adaptes. El flujo es idéntico para cualquier stack: cambia solo el contenido del `Dockerfile` y del esqueleto que pedís en el paso 2.
+> 🧭 **La app de ejemplo.** El manual usa nombres genéricos `miorg/miapp` para que los adaptes. El flujo es idéntico para cualquier stack: cambia solo el contenido del `Dockerfile` y del esqueleto que pides en el paso 2.
 
 > 🚀 **Este tutorial se documenta a sí mismo.** La app desplegada **sirve esta misma wiki** como sitio web: la home `/` renderiza el sitio-wiki que estás leyendo.
 > - **Repo:** [`neomemorial-org/tutorial-apps`](https://github.com/neomemorial-org/tutorial-apps)
@@ -32,9 +32,9 @@ El repo es la fuente de verdad: EasyPanel va a construir y desplegar exactamente
 
 ### Opción A — desde la web
 
-1. Entrá a [github.com/new](https://github.com/new).
+1. Entra a [github.com/new](https://github.com/new).
 2. Nombre: `miapp`. Visibilidad: **Private** (el deploy key funciona igual con repos privados).
-3. Tildá **Add a README** y dejá el `.gitignore` en **nada aún** (lo agregamos nosotros). Create repository.
+3. Marca **Add a README** y deja el `.gitignore` en **nada aún** (lo agregamos nosotros). Create repository.
 
 ### Opción B — desde la terminal con `gh`
 
@@ -55,20 +55,20 @@ cd miapp
 .DS_Store
 ```
 
-> 🔑 Anotá la **URL SSH** del repo: `git@github.com:miorg/miapp.git`. La vas a necesitar en el paso 4 para conectar EasyPanel.
+> 🔑 Anota la **URL SSH** del repo: `git@github.com:miorg/miapp.git`. La vas a necesitar en el paso 4 para conectar EasyPanel.
 
 ---
 
 ## 2. Armar el esqueleto con Claude
 
-En vez de crear archivos a mano, le pedís a Claude que genere el esqueleto completo describiendo el **stack** y las **convenciones**. Cuanto más precisa la especificación, menos correcciones después.
+En vez de crear archivos a mano, le pides a Claude que genere el esqueleto completo describiendo el **stack** y las **convenciones**. Cuanto más precisa la especificación, menos correcciones después.
 
 ### Prompt plantilla (copiar y completar)
 
-Reemplazá lo que está entre `«…»`. Este ejemplo ya viene cargado con el stack del manual:
+Reemplaza lo que está entre `«…»`. Este ejemplo ya viene cargado con el stack del manual:
 
 ```text
-Armá el esqueleto base de una aplicación web lista para deploy con Docker.
+Arma el esqueleto base de una aplicación web lista para deploy con Docker.
 
 STACK
 - Lenguaje: PHP «8.3», sin framework (vanilla).
@@ -76,7 +76,7 @@ STACK
   único en public/index.php y un router propio simple.
 - Autoload: PSR-4 con un autoloader propio liviano (app/autoload.php),
   namespace raíz "App\" apuntando a app/. Sin dependencias externas
-  (Composer opcional, solo si más adelante sumás librerías).
+  (Composer opcional, solo si más adelante agregas librerías).
 - Base de datos: PostgreSQL, acceso vía PDO (pdo_pgsql).
 - Config por variables de entorno (getenv), nunca hardcodeada.
 
@@ -95,7 +95,7 @@ REQUISITOS
 - Código PHP 8+ con declare(strict_types=1) y tipado.
 - Comentarios breves en español.
 
-Devolveme cada archivo con su ruta y su contenido completo.
+Devuélveme cada archivo con su ruta y su contenido completo.
 ```
 
 > 💡 **Qué variar por proyecto.** Las 4 palancas que cambian el esqueleto: **lenguaje/versión** · **framework o vanilla** · **base de datos** · **arquitectura**. Todo lo demás (Docker, deploy) queda igual.
@@ -124,7 +124,7 @@ miapp/
 └── .gitignore
 ```
 
-Revisá lo generado, hacé commit y push a `main`:
+Revisa lo generado, haz commit y push a `main`:
 
 ```bash
 git add .
@@ -136,12 +136,12 @@ git push -u origin main
 
 ## 3. Crear la aplicación en EasyPanel
 
-En EasyPanel un **Proyecto** agrupa servicios (tu app + su base de datos). Dentro creás un servicio de tipo **App**.
+En EasyPanel un **Proyecto** agrupa servicios (tu app + su base de datos). Dentro creas un servicio de tipo **App**.
 
 1. En el dashboard, **Create Project** → nombre `miapp`.
-2. Dentro del proyecto, **+ Service** → elegí **App**.
-3. Ponele nombre al servicio, ej. `web`. Queda como `miapp_web` a nivel interno.
-4. Guardá. Todavía no despliega nada — falta conectar la fuente (paso 4) y definir el build (paso 5).
+2. Dentro del proyecto, **+ Service** → elige **App**.
+3. Ponle nombre al servicio, ej. `web`. Queda como `miapp_web` a nivel interno.
+4. Guarda. Todavía no despliega nada — falta conectar la fuente (paso 4) y definir el build (paso 5).
 
 > 🗄️ El servicio de **Postgres** lo agregamos en el paso 6, cuando conectamos la base. Por ahora alcanza con el servicio **App**.
 
@@ -156,39 +156,39 @@ Dos piezas trabajan juntas:
 
 ### 4.1 · Apuntar EasyPanel al repo
 
-1. En el servicio `web`, pestaña **Source** → elegí **GitHub** (modo Deploy Key, no la GitHub App).
+1. En el servicio `web`, pestaña **Source** → elige **GitHub** (modo Deploy Key, no la GitHub App).
 2. Repository: `git@github.com:miorg/miapp.git` · Branch: `main`.
-3. EasyPanel genera y muestra una **Deploy Key** (clave pública SSH). Copiala entera.
+3. EasyPanel genera y muestra una **Deploy Key** (clave pública SSH). Cópiala entera.
 
 ### 4.2 · Cargar la deploy key en GitHub
 
 1. En el repo → **Settings → Deploy keys → Add deploy key**.
-2. Title: `easypanel`. Key: pegá la clave que copiaste.
-3. **Dejá SIN tildar "Allow write access"** — EasyPanel solo necesita leer. Add key.
+2. Title: `easypanel`. Key: pega la clave que copiaste.
+3. **Deja SIN marcar "Allow write access"** — EasyPanel solo necesita leer. Add key.
 
 > 🔒 **Solo lectura.** No habilites escritura en la deploy key. EasyPanel clona y construye; nunca necesita escribir en tu repo.
 
 ### 4.3 · Registrar el webhook en GitHub
 
-1. En EasyPanel, dentro de **Source** / **Deployments**, copiá la **Webhook URL** que ofrece el servicio.
+1. En EasyPanel, dentro de **Source** / **Deployments**, copia la **Webhook URL** que ofrece el servicio.
 2. En el repo → **Settings → Webhooks → Add webhook**.
 3. Payload URL: la de EasyPanel · Content type: `application/json`.
 4. Events: **Just the push event** · Active: ✓. Add webhook.
 
-GitHub manda un ping de prueba: en la lista de webhooks debería aparecer un **✓ verde** (Recent Deliveries → response 200). Si aparece rojo, revisá que la URL esté completa.
+GitHub manda un ping de prueba: en la lista de webhooks debería aparecer un **✓ verde** (Recent Deliveries → response 200). Si aparece rojo, revisa que la URL esté completa.
 
-> 🔁 A partir de acá: cada `git push origin main` dispara el webhook → EasyPanel clona con la deploy key → construye la imagen Docker → redespliega. Cero pasos manuales.
+> 🔁 A partir de aquí: cada `git push origin main` dispara el webhook → EasyPanel clona con la deploy key → construye la imagen Docker → redespliega. Cero pasos manuales.
 
 ---
 
 ## 5. Todo se construye con Docker
 
-EasyPanel puede usar Nixpacks o buildpacks, pero acá mandamos nosotros: build method **Dockerfile**. Así el entorno de producción es idéntico al que definimos, sin sorpresas.
+EasyPanel puede usar Nixpacks o buildpacks, pero aquí mandamos nosotros: build method **Dockerfile**. Así el entorno de producción es idéntico al que definimos, sin sorpresas.
 
 ### Elegir el build en EasyPanel
 
 1. Servicio `web` → pestaña **Build** → método **Dockerfile**.
-2. Dockerfile path: `Dockerfile` (raíz del repo). Guardá.
+2. Dockerfile path: `Dockerfile` (raíz del repo). Guarda.
 
 ### El `Dockerfile` de la app
 
@@ -222,12 +222,12 @@ EXPOSE 80
 
 > 🌐 **Puerto.** La imagen expone el `80`. En EasyPanel, servicio → pestaña **Domains**, tu dominio (ej. `apps-wiki.u1xuyr.easypanel.host`) debe apuntar al puerto **`80`** del contenedor. EasyPanel resuelve el TLS solo con Let's Encrypt.
 
-> 📌 **Si más adelante sumás librerías con Composer**, agregá al Dockerfile, antes del `EXPOSE`:
+> 📌 **Si más adelante agregas librerías con Composer**, agrega al Dockerfile, antes del `EXPOSE`:
 > ```dockerfile
 > COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 > RUN composer install --no-dev --optimize-autoloader --no-interaction
 > ```
-> y cambiá el `require` de `public/index.php` a `require __DIR__ . '/../vendor/autoload.php';`.
+> y cambia el `require` de `public/index.php` a `require __DIR__ . '/../vendor/autoload.php';`.
 
 ### El `.htaccess` que enruta todo al front controller
 
@@ -250,7 +250,7 @@ El autoloader propio, PSR-4 sin Composer:
 // app/autoload.php
 declare(strict_types=1);
 
-// App\ -> app/ . Si sumás librerías de terceros, pasá a Composer.
+// App\ -> app/ . Si agregas librerías de terceros, pasa a Composer.
 spl_autoload_register(static function (string $class): void {
     $prefix = 'App\\';
     if (!str_starts_with($class, $prefix)) {
@@ -400,7 +400,7 @@ final class DemoController
 > ```bash
 > php bin/build-wiki.php
 > ```
-> El script envuelve el fuente en un documento HTML completo (`<!doctype>`/`<head>`/`<body>`) y lo escribe en `app/Views/home.php`. Editá `wiki/source.html`, corré el script, commiteá y pusheá → EasyPanel redespliega la wiki actualizada.
+> El script envuelve el fuente en un documento HTML completo (`<!doctype>`/`<head>`/`<body>`) y lo escribe en `app/Views/home.php`. Edita `wiki/source.html`, ejecuta el script, haz commit y push → EasyPanel redespliega la wiki actualizada.
 
 ---
 
@@ -408,14 +408,14 @@ final class DemoController
 
 ### 6.1 · Agregar Postgres (opcional para el primer deploy)
 
-> La wiki (home `/`) abre **sin** base de datos. Postgres solo lo necesita la ruta `/demo` para mostrar el estado de conexión. Podés saltar 6.1 y 6.2 y sumarlo después.
+> La wiki (home `/`) abre **sin** base de datos. Postgres solo lo necesita la ruta `/demo` para mostrar el estado de conexión. Puedes saltar 6.1 y 6.2 y sumarlo después.
 
 1. En el proyecto `miapp` → **+ Service → Postgres**. Nombre: `db`.
 2. EasyPanel te muestra las **Credentials**: host interno, puerto, usuario, contraseña y database. El host interno suele ser el nombre del servicio, ej. `miapp_db`.
 
 ### 6.2 · Conectar la app a la DB con variables de entorno
 
-En el servicio `web` → pestaña **Environment**, cargá las variables que lee `Database.php`. Usá los valores internos del servicio Postgres:
+En el servicio `web` → pestaña **Environment**, carga las variables que lee `Database.php`. Usa los valores internos del servicio Postgres:
 
 | Variable   | Valor (ejemplo)              |
 |------------|------------------------------|
@@ -429,9 +429,9 @@ En el servicio `web` → pestaña **Environment**, cargá las variables que lee 
 
 ### 6.3 · Desplegar
 
-1. En el servicio `web`, tocá **Deploy** (o simplemente hacé un `git push` — el webhook lo dispara).
-2. Mirá los **Logs / Deployments**: verás el build de Docker (FROM, extensiones, copy del código) y luego el contenedor arriba.
-3. Abrí el **dominio** asignado en la pestaña Domains → en la instancia real: <https://apps-wiki.u1xuyr.easypanel.host/>
+1. En el servicio `web`, toca **Deploy** (o simplemente haz un `git push` — el webhook lo dispara).
+2. Mira los **Logs / Deployments**: verás el build de Docker (FROM, extensiones, copy del código) y luego el contenedor arriba.
+3. Abre el **dominio** asignado en la pestaña Domains → en la instancia real: <https://apps-wiki.u1xuyr.easypanel.host/>
 
 > ✅ En `/` deberías ver **esta misma wiki**. Y en [`/demo`](https://apps-wiki.u1xuyr.easypanel.host/demo), el "Hola mundo 👋" con **"Base de datos: conectada"** (o **"sin conexion"** si todavía no creaste Postgres — la app abre igual; pasa a "conectada" cuando cargues las variables del paso 6.2).
 
@@ -439,11 +439,11 @@ En el servicio `web` → pestaña **Environment**, cargá las variables que lee 
 
 ## Listo — y ahora es automático
 
-La app quedó en producción y el pipeline en marcha. De acá en más el ciclo es:
+La app quedó en producción y el pipeline en marcha. De aquí en más el ciclo es:
 
-**editás → `git push origin main` → EasyPanel construye y redespliega solo**
+**editas → `git push origin main` → EasyPanel construye y redespliega solo**
 
-Para una app nueva, repetís del paso 1 al 6 cambiando el nombre del repo y el `Dockerfile`.
+Para una app nueva, repites del paso 1 al 6 cambiando el nombre del repo y el `Dockerfile`.
 
 ---
 
