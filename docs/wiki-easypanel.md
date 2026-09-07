@@ -5,7 +5,14 @@
 
 **Stack del ejemplo:** `PHP 8.3` · sin framework · MVC · PostgreSQL · Docker · EasyPanel · GitHub
 
-> 🧭 **La app de ejemplo.** Todo el manual usa un proyecto llamado `miapp` del usuario/organización `miorg`. Donde veas esos nombres, reemplazalos por los tuyos. El flujo es idéntico para cualquier stack: cambia solo el contenido del `Dockerfile` y del esqueleto que pedís en el paso 2.
+> 🧭 **La app de ejemplo.** El manual usa nombres genéricos `miorg/miapp` para que los adaptes. El flujo es idéntico para cualquier stack: cambia solo el contenido del `Dockerfile` y del esqueleto que pedís en el paso 2.
+
+> 🚀 **Instancia real de este repo.** Este tutorial ya está implementado y desplegado:
+> - **Repo:** [`neomemorial-org/tutorial-apps`](https://github.com/neomemorial-org/tutorial-apps)
+> - **App (EasyPanel):** `apps-wiki` · build por Docker · deploy key + webhook activos
+> - **URL en vivo:** <https://apps-wiki.u1xuyr.easypanel.host/>
+>
+> El código de la app vive en la **raíz del repo** (`Dockerfile`, `public/`, `app/`, `config/`) y la documentación en `docs/`.
 
 ## Índice
 
@@ -66,18 +73,20 @@ STACK
 - Lenguaje: PHP «8.3», sin framework (vanilla).
 - Arquitectura: MVC (Model - View - Controller) con un front controller
   único en public/index.php y un router propio simple.
-- Autoload: Composer PSR-4, namespace raíz "App\" apuntando a app/.
+- Autoload: PSR-4 con un autoloader propio liviano (app/autoload.php),
+  namespace raíz "App\" apuntando a app/. Sin dependencias externas
+  (Composer opcional, solo si más adelante sumás librerías).
 - Base de datos: PostgreSQL, acceso vía PDO (pdo_pgsql).
 - Config por variables de entorno (getenv), nunca hardcodeada.
 
 ESTRUCTURA DE CARPETAS
   public/          -> único directorio expuesto por el servidor web
+  app/autoload.php -> autoloader PSR-4 propio (sin Composer)
   app/Core/        -> Router, Database (conexión PDO)
   app/Controllers/ -> HomeController con acción index
   app/Views/       -> home.php
   config/          -> lectura de env
   Dockerfile       -> imagen php:8.3-apache con docroot en /public
-  composer.json    -> autoload PSR-4
 
 REQUISITOS
 - La ruta "/" debe responder un "Hola mundo" e indicar si la conexión
@@ -95,8 +104,10 @@ Devolveme cada archivo con su ruta y su contenido completo.
 ```text
 miapp/
 ├── public/
-│   └── index.php          # front controller (única puerta de entrada)
+│   ├── index.php          # front controller (única puerta de entrada)
+│   └── .htaccess          # manda todo al front controller
 ├── app/
+│   ├── autoload.php       # autoloader PSR-4 propio (sin Composer)
 │   ├── Core/
 │   │   ├── Router.php      # enruta method + path → controlador
 │   │   └── Database.php    # conexión PDO a Postgres
@@ -106,7 +117,6 @@ miapp/
 │       └── home.php
 ├── config/
 │   └── config.php
-├── composer.json
 ├── Dockerfile
 └── .gitignore
 ```
@@ -179,7 +189,7 @@ EasyPanel puede usar Nixpacks o buildpacks, pero acá mandamos nosotros: build m
 
 ### El `Dockerfile` de la app
 
-Imagen oficial PHP con Apache. Instalamos la extensión de Postgres, movemos el docroot a `/public` (nadie ve el resto del código) e instalamos dependencias con Composer.
+Imagen oficial PHP con Apache. Instalamos la extensión de Postgres, movemos el docroot a `/public` (nadie ve el resto del código) y copiamos la app. Como el esqueleto no tiene dependencias externas (usa su propio autoloader), **no hace falta el paso de Composer** — el build queda más simple y rápido.
 
 ```dockerfile
 FROM php:8.3-apache
@@ -190,24 +200,62 @@ RUN apt-get update \
     && docker-php-ext-install pdo pdo_pgsql \
     && rm -rf /var/lib/apt/lists/*
 
-# 2. Docroot en /public + reescritura de URLs
+# 2. Docroot en /public + reescritura de URLs (front controller)
 ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf \
     && sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf \
     && a2enmod rewrite
 
-# 3. Composer + dependencias
-COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+# 3. Copiar el codigo (sin dependencias externas: autoloader propio)
 WORKDIR /var/www/html
 COPY . /var/www/html
-RUN composer install --no-dev --optimize-autoloader --no-interaction
 
 EXPOSE 80
 ```
 
-> 🌐 **Puerto.** La imagen expone el `80`. En la pestaña **Domains** de EasyPanel, mapeá tu dominio al puerto `80` del servicio (EasyPanel resuelve el TLS solo con Let's Encrypt).
+> 🌐 **Puerto.** La imagen expone el `80`. En EasyPanel, servicio → pestaña **Domains**, tu dominio (ej. `apps-wiki.u1xuyr.easypanel.host`) debe apuntar al puerto **`80`** del contenedor. EasyPanel resuelve el TLS solo con Let's Encrypt.
+
+> 📌 **Si más adelante sumás librerías con Composer**, agregá al Dockerfile, antes del `EXPOSE`:
+> ```dockerfile
+> COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+> RUN composer install --no-dev --optimize-autoloader --no-interaction
+> ```
+> y cambiá el `require` de `public/index.php` a `require __DIR__ . '/../vendor/autoload.php';`.
+
+### El `.htaccess` que enruta todo al front controller
+
+En `public/.htaccess`, para que cualquier URL entre por `index.php` (Apache ya tiene `rewrite` habilitado por el Dockerfile):
+
+```apacheconf
+# public/.htaccess
+RewriteEngine On
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^ index.php [QSA,L]
+```
 
 ### Piezas clave del esqueleto
+
+El autoloader propio, PSR-4 sin Composer:
+
+```php
+<?php
+// app/autoload.php
+declare(strict_types=1);
+
+// App\ -> app/ . Si sumás librerías de terceros, pasá a Composer.
+spl_autoload_register(static function (string $class): void {
+    $prefix = 'App\\';
+    if (!str_starts_with($class, $prefix)) {
+        return;
+    }
+    $relative = substr($class, strlen($prefix));
+    $file = __DIR__ . '/' . str_replace('\\', '/', $relative) . '.php';
+    if (is_file($file)) {
+        require $file;
+    }
+});
+```
 
 El front controller, único punto de entrada expuesto:
 
@@ -216,16 +264,35 @@ El front controller, único punto de entrada expuesto:
 // public/index.php
 declare(strict_types=1);
 
-require __DIR__ . '/../vendor/autoload.php';
+require __DIR__ . '/../app/autoload.php';
 
 use App\Core\Router;
+use App\Controllers\HomeController;
 
 $router = new Router();
-$router->get('/', [App\Controllers\HomeController::class, 'index']);
-$router->dispatch($_SERVER['REQUEST_URI'], $_SERVER['REQUEST_METHOD']);
+$router->get('/', [HomeController::class, 'index']);
+$router->dispatch($_SERVER['REQUEST_URI'] ?? '/', $_SERVER['REQUEST_METHOD'] ?? 'GET');
 ```
 
-La conexión a Postgres, tolerante a que la DB aún no exista:
+La config leída de variables de entorno (nunca hardcodeada):
+
+```php
+<?php
+// config/config.php
+declare(strict_types=1);
+
+return [
+    'db' => [
+        'host' => getenv('DB_HOST') ?: '',
+        'port' => getenv('DB_PORT') ?: '5432',
+        'name' => getenv('DB_NAME') ?: '',
+        'user' => getenv('DB_USER') ?: '',
+        'pass' => getenv('DB_PASS') ?: '',
+    ],
+];
+```
+
+La conexión a Postgres, tolerante a que la DB aún no exista (así el "hola mundo" abre aunque todavía no hayas creado el servicio Postgres):
 
 ```php
 <?php
@@ -241,17 +308,25 @@ final class Database
 {
     public static function connect(): ?PDO
     {
+        $cfg = require __DIR__ . '/../../config/config.php';
+        $db = $cfg['db'];
+
+        // Sin credenciales cargadas todavía -> no intentamos conectar.
+        if ($db['host'] === '' || $db['name'] === '') {
+            return null;
+        }
+
         try {
             $dsn = sprintf(
                 'pgsql:host=%s;port=%s;dbname=%s',
-                getenv('DB_HOST'), getenv('DB_PORT') ?: '5432', getenv('DB_NAME')
+                $db['host'], $db['port'], $db['name']
             );
-            return new PDO($dsn, getenv('DB_USER'), getenv('DB_PASS'), [
+            return new PDO($dsn, $db['user'], $db['pass'], [
                 PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                PDO::ATTR_TIMEOUT => 3,
             ]);
         } catch (PDOException) {
-            // La app arranca igual aunque la DB no esté lista
-            return null;
+            return null; // La app arranca igual aunque la DB no esté lista
         }
     }
 }
@@ -273,7 +348,7 @@ final class HomeController
     public function index(): void
     {
         $db = Database::connect();
-        $dbEstado = $db instanceof \PDO ? 'conectada ✅' : 'sin conexión ⚠️';
+        $dbEstado = $db instanceof \PDO ? 'conectada' : 'sin conexion';
         require __DIR__ . '/../Views/home.php';
     }
 }
@@ -296,7 +371,9 @@ final class HomeController
 
 ## 6. Primer deploy: ver el "hola mundo"
 
-### 6.1 · Agregar Postgres
+### 6.1 · Agregar Postgres (opcional para el primer deploy)
+
+> El "hola mundo" abre **sin** base de datos. Podés saltar 6.1 y 6.2, ver la app funcionando, y sumar Postgres después.
 
 1. En el proyecto `miapp` → **+ Service → Postgres**. Nombre: `db`.
 2. EasyPanel te muestra las **Credentials**: host interno, puerto, usuario, contraseña y database. El host interno suele ser el nombre del servicio, ej. `miapp_db`.
@@ -318,10 +395,10 @@ En el servicio `web` → pestaña **Environment**, cargá las variables que lee 
 ### 6.3 · Desplegar
 
 1. En el servicio `web`, tocá **Deploy** (o simplemente hacé un `git push` — el webhook lo dispara).
-2. Mirá los **Logs / Deployments**: verás el build de Docker (FROM, extensiones, composer install) y luego el contenedor arriba.
-3. Abrí el **dominio** asignado en la pestaña Domains.
+2. Mirá los **Logs / Deployments**: verás el build de Docker (FROM, extensiones, copy del código) y luego el contenedor arriba.
+3. Abrí el **dominio** asignado en la pestaña Domains → en la instancia real: <https://apps-wiki.u1xuyr.easypanel.host/>
 
-> ✅ Deberías ver **"Hola mundo 👋"** y la línea **"Base de datos: conectada ✅"**. Si dice *sin conexión ⚠️*, revisá las variables de entorno del paso 6.2.
+> ✅ Deberías ver **"Hola mundo 👋"** y la línea **"Base de datos: conectada"**. Si todavía no creaste el servicio Postgres, verás **"sin conexion"** y eso está bien — la app abre igual. Cuando cargues las variables del paso 6.2, pasa a "conectada".
 
 ---
 
