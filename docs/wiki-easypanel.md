@@ -396,7 +396,11 @@ final class DemoController
 </html>
 ```
 
-> 📝 **Sobre `home.php`.** Es un archivo HTML grande (el sitio-wiki completo). En este repo se genera a partir del mismo HTML que publicás como Artifact; podés editarlo directo o regenerarlo cuando actualices la wiki.
+> 📝 **Sobre `home.php` (generado).** No se edita a mano. El fuente de la wiki vive en `wiki/source.html` (el mismo HTML que se publica como Artifact) y `home.php` se genera con:
+> ```bash
+> php bin/build-wiki.php
+> ```
+> El script envuelve el fuente en un documento HTML completo (`<!doctype>`/`<head>`/`<body>`) y lo escribe en `app/Views/home.php`. Editá `wiki/source.html`, corré el script, commiteá y pusheá → EasyPanel redespliega la wiki actualizada.
 
 ---
 
