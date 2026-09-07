@@ -203,11 +203,13 @@ RUN apt-get update \
     && docker-php-ext-install pdo pdo_pgsql \
     && rm -rf /var/lib/apt/lists/*
 
-# 2. Docroot en /public + reescritura de URLs (front controller)
+# 2. Docroot en /public + rewrite + permitir .htaccess (AllowOverride All)
 ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf \
     && sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf \
-    && a2enmod rewrite
+    && a2enmod rewrite \
+    && printf '<Directory %s>\n    AllowOverride All\n    Require all granted\n</Directory>\n' "$APACHE_DOCUMENT_ROOT" > /etc/apache2/conf-available/app.conf \
+    && a2enconf app
 
 # 3. Copiar el codigo (sin dependencias externas: autoloader propio)
 WORKDIR /var/www/html
@@ -215,6 +217,8 @@ COPY . /var/www/html
 
 EXPOSE 80
 ```
+
+> ⚠️ **Gotcha importante.** La imagen `php:8.3-apache` viene con `AllowOverride None`, así que **ignora el `.htaccess`**. Sin la línea `AllowOverride All`, la home `/` funciona (la sirve `DirectoryIndex`) pero **cualquier otra ruta da 404 de Apache** (ej. `/demo`), porque el rewrite del front controller nunca corre. Por eso agregamos el bloque `<Directory>` con `AllowOverride All`.
 
 > 🌐 **Puerto.** La imagen expone el `80`. En EasyPanel, servicio → pestaña **Domains**, tu dominio (ej. `apps-wiki.u1xuyr.easypanel.host`) debe apuntar al puerto **`80`** del contenedor. EasyPanel resuelve el TLS solo con Let's Encrypt.
 

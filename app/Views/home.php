@@ -693,11 +693,13 @@ git push <span class="tok-k">-u</span> origin main</code></pre>
     && docker-php-ext-install pdo pdo_pgsql \
     && rm -rf /var/lib/apt/lists/*
 
-<span class="tok-c"># 2. Docroot en /public + reescritura de URLs (front controller)</span>
+<span class="tok-c"># 2. Docroot en /public + rewrite + permitir .htaccess (AllowOverride All)</span>
 <span class="tok-k">ENV</span> APACHE_DOCUMENT_ROOT=/var/www/html/public
 <span class="tok-k">RUN</span> sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf \
     && sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf \
-    && a2enmod rewrite
+    && a2enmod rewrite \
+    && printf '&lt;Directory %s&gt;\n    AllowOverride All\n    Require all granted\n&lt;/Directory&gt;\n' "$APACHE_DOCUMENT_ROOT" &gt; /etc/apache2/conf-available/app.conf \
+    && a2enconf app
 
 <span class="tok-c"># 3. Copiar el codigo (sin dependencias: autoloader propio)</span>
 <span class="tok-k">WORKDIR</span> /var/www/html
@@ -705,6 +707,11 @@ git push <span class="tok-k">-u</span> origin main</code></pre>
 
 <span class="tok-k">EXPOSE</span> 80</code></pre>
       </figure>
+
+      <div class="note warn">
+        <span class="ic">⚠️</span>
+        <div><p><strong>Gotcha importante.</strong> La imagen <code>php:8.3-apache</code> viene con <code>AllowOverride None</code>, así que <strong>ignora el <code>.htaccess</code></strong>. Sin la línea <code>AllowOverride All</code>, la home <code>/</code> funciona (la sirve <code>DirectoryIndex</code>) pero <strong>cualquier otra ruta da 404 de Apache</strong> (ej. <code>/demo</code>). Por eso agregamos el bloque <code>&lt;Directory&gt;</code>.</p></div>
+      </div>
 
       <div class="note">
         <span class="ic">🌐</span>
